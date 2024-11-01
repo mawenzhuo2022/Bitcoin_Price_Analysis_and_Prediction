@@ -1,80 +1,49 @@
 # -*- coding: utf-8 -*-
 # @Author  : Wenzhuo Ma
 # @Time    : 2024/11/1 8:10
-# @Function:
+# @Function: Script to perform feature transformation and sentiment analysis on processed text data.
+
 import pandas as pd
 from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
 from nltk.sentiment import SentimentIntensityAnalyzer
 import nltk
 
-# 确保已经下载了 NLTK 的情感分析库
+# Ensure the NLTK sentiment analysis package is downloaded
 nltk.download('vader_lexicon')
 
-
 def feature_transformation_and_sentiment_analysis(input_file, output_file):
-    # 读取 CSV 文件
+    # Load the CSV file into a DataFrame
     df = pd.read_csv(input_file)
-    # 确保 'processed_text' 列存在
-    if 'processed_text' in df.columns:
-        # 特征转换 - BoW
-        vectorizer = CountVectorizer()
-        bow_matrix = vectorizer.fit_transform(df['processed_text'])
 
-        # 特征转换 - TF-IDF
-        tfidf_transformer = TfidfTransformer()
-        tfidf_matrix = tfidf_transformer.fit_transform(bow_matrix)
-
-        # 情感分析
-        sid = SentimentIntensityAnalyzer()
-        df['sentiment_score'] = df['processed_text'].apply(lambda text: sid.polarity_scores(text)['compound'])
-
-        # 输出新的 CSV 文件
-        df.to_csv(output_file, index=False)
-    else:
+    # Check if the 'processed_text' column exists in the DataFrame
+    if 'processed_text' not in df.columns:
         print("Error: The CSV file does not contain a 'processed_text' column.")
+        return
 
+    # Handle missing values by filling them with empty strings
+    df['processed_text'] = df['processed_text'].fillna("")  # Alternative: df.dropna(subset=['processed_text']) to remove rows
 
-# 指定输入和输出文件
-input_csv = 'path_to_input_csv.csv'
-output_csv = 'path_to_output_csv.csv'
+    # Feature transformation - BoW (Bag of Words)
+    vectorizer = CountVectorizer()
+    bow_matrix = vectorizer.fit_transform(df['processed_text'])
 
-# 调用处理函数
-feature_transformation_and_sentiment_analysis(input_csv, output_csv)
-import pandas as pd
-from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
-from nltk.sentiment import SentimentIntensityAnalyzer
-import nltk
+    # Feature transformation - TF-IDF (Term Frequency-Inverse Document Frequency)
+    tfidf_transformer = TfidfTransformer()
+    tfidf_matrix = tfidf_transformer.fit_transform(bow_matrix)
 
-# 确保已经下载了 NLTK 的情感分析库
-nltk.download('vader_lexicon')
+    # Perform sentiment analysis using NLTK's VADER
+    sid = SentimentIntensityAnalyzer()
+    df['sentiment_score'] = df['processed_text'].apply(lambda text: sid.polarity_scores(text)['compound'])
 
+    # Remove rows where the sentiment score is 0
+    df = df[df['sentiment_score'] != 0]
 
-def feature_transformation_and_sentiment_analysis(input_file, output_file):
-    # 读取 CSV 文件
-    df = pd.read_csv(input_file)
-    # 确保 'processed_text' 列存在
-    if 'processed_text' in df.columns:
-        # 特征转换 - BoW
-        vectorizer = CountVectorizer()
-        bow_matrix = vectorizer.fit_transform(df['processed_text'])
+    # Save the updated DataFrame to a new CSV file
+    df.to_csv(output_file, index=False)
 
-        # 特征转换 - TF-IDF
-        tfidf_transformer = TfidfTransformer()
-        tfidf_matrix = tfidf_transformer.fit_transform(bow_matrix)
+# Specify the input and output file paths
+input_csv = '..\\data\\text_process.csv'
+output_csv = '..\\data\\sentiment_analysis.csv'
 
-        # 情感分析
-        sid = SentimentIntensityAnalyzer()
-        df['sentiment_score'] = df['processed_text'].apply(lambda text: sid.polarity_scores(text)['compound'])
-
-        # 输出新的 CSV 文件
-        df.to_csv(output_file, index=False)
-    else:
-        print("Error: The CSV file does not contain a 'processed_text' column.")
-
-
-# 指定输入和输出文件
-input_csv = '../data/text_sentiment.csv'
-output_csv = '../data/sentiment_analysis.csv'
-
-# 调用处理函数
+# Call the function to process the data
 feature_transformation_and_sentiment_analysis(input_csv, output_csv)
