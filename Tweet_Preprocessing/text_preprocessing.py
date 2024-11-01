@@ -73,7 +73,7 @@ def date_transform(date:str)-> str:
 
 def main():
     df = pd.read_csv(
-        "/Users/nataliehu/Desktop/emory/Emory homework/2024/CS 470/Final project/Bitcoin_Price_Analysis/Sampled_tweets.csv")
+        "../data/sampled_tweets.csv")
 
     # Get string columns
     string_columns = df.select_dtypes(include='object').columns
@@ -82,7 +82,7 @@ def main():
     for column in string_columns:
         df[column] = df[column].apply(clean_text)
     df= df.dropna()
-    df.to_csv("/Users/nataliehu/Desktop/emory/Emory homework/2024/CS 470/Final project/Bitcoin_Price_Analysis/clean_tweets.csv", index=False)
+    df.to_csv("../data/clean_tweets.csv", index=False)
 
 
 

@@ -6,7 +6,7 @@ df1 = pd.read_csv('/Users/nataliehu/Desktop/emory/Emory homework/2024/CS 470/Fin
 df1.dataframeName = 'Bitcoin_tweets.csv'
 df1= df1.dropna()
 #remember to change the directory when u r using
-df1.to_csv('/Users/nataliehu/Desktop/emory/Emory homework/2024/CS 470/Final project/Bitcoin_Price_Analysis/Sampled_tweets.csv', index=False)
+df1.to_csv('../data/sampled_tweets.csv', index=False)
 
 
 
