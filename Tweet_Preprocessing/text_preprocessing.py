@@ -73,7 +73,7 @@ def date_transform(date:str)-> str:
 
 def main():
     df = pd.read_csv(
-        "../data/sampled_tweets.csv")
+        "../data/Tweet Preprocessing/sampled_tweets.csv")
 
     # Get string columns
     string_columns = df.select_dtypes(include='object').columns
