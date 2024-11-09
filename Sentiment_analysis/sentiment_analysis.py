@@ -42,8 +42,8 @@ def feature_transformation_and_sentiment_analysis(input_file, output_file):
     df.to_csv(output_file, index=False)
 
 # Specify the input and output file paths
-input_csv = '..\\data\\text_process.csv'
-output_csv = '..\\data\\sentiment_analysis.csv'
+input_csv = '..\\data\\Tweet_Preprocessing\\text_process.csv'
+output_csv = '..\\data\\Sentiment_Analysis\\sentiment_analysis.csv'
 
 # Call the function to process the data
 feature_transformation_and_sentiment_analysis(input_csv, output_csv)

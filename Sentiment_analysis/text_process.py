@@ -44,8 +44,8 @@ def process_csv(input_file, output_file):
         print("Error: The CSV file does not contain a 'text' column.")
 
 # Specify the input and output file paths
-input_csv = '../data/clean_tweets.csv'
-output_csv = '../data/text_process.csv'
+input_csv = '../data/Tweet_Preprocessing/clean_tweets.csv'
+output_csv = '../data/Sentiment_Analysis/text_process.csv'
 
 # Call the function to process the CSV file
 process_csv(input_csv, output_csv)
