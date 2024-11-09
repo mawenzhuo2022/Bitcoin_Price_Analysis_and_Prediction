@@ -1,8 +1,8 @@
 # @Author  : Sixing Wu
 # @Time    : 2024/11/9
 # @Mac, Python 3.11
-# @Function: Using sentiment score and various features is price data to explore the correlation,
-# output a scatter plot of the sentiment score and selected features
+# @Function: Using sentiment scores, with the previous day's data (optional) of open, close, high,
+# low, market cap, and volume to predict the next day's open price by random forest
 
 import pandas as pd
 from sklearn.ensemble import RandomForestRegressor
