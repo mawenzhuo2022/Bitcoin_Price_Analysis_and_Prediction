@@ -1,9 +1,9 @@
 from typing import List
 import pandas as pd
 import re
-import string
+
 import emoji
-from pandas import Index
+
 
 
 def remove_url(text: str) -> str:
@@ -65,15 +65,8 @@ def clean_text(text: str) -> str:
     return cleaned_text
 
 
-def date_transform(date:str)-> str:
-    """
-    :param date:
-    :return:
-    """
 
-def main():
-    df = pd.read_csv(
-        "../data/Tweet_Preprocessing/sampled_tweets.csv")
+def text_preprocessing(df):
 
     # Get string columns
     string_columns = df.select_dtypes(include='object').columns
@@ -82,9 +75,7 @@ def main():
     for column in string_columns:
         df[column] = df[column].apply(clean_text)
     df= df.dropna()
-    df.to_csv("../data/clean_tweets.csv", index=False)
+    return df
 
 
 
-if __name__ == "__main__":
-    main()
