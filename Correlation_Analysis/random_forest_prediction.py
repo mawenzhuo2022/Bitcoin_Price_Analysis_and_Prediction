@@ -8,24 +8,24 @@ import pandas as pd
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error
+import matplotlib.pyplot as plt
 
-def random_forest_prediction(tweet_data, price_data, feature):
+def random_forest_prediction(data, feature):
     # Load the CSV file into a DataFrame
-    tweet_df = pd.read_csv(tweet_data)
-    price_df = pd.read_csv(price_data)
-    price_df = price_df.sort_values(by='Start', ascending=True).reset_index(drop=True)
+    data_df = pd.read_csv(data)
+    data_df = data_df.sort_values(by='Start', ascending=True).reset_index(drop=True)
 
-    # Convert the 'date' column to a datetime format if it's not already
-    tweet_df['date'] = pd.to_datetime(tweet_df['date']).dt.date
+    # Convert the 'Start' column to a datetime format
+    data_df['Start'] = pd.to_datetime(data_df['Start']).dt.date
 
     # Generate daily info with sentiment scores and price data
-    daily_info = tweet_df.groupby('date')['sentiment_score'].sum().reset_index()
-    daily_info[feature] = price_df[feature]
+    daily_info = data_df.copy()
 
     # Shift the features to get the previous day's data for each row
-    feature.append('sentiment_score')
+    feature_with_sentiment = feature + ['sentiment_score']
     variables = []
-    for x in feature:
+
+    for x in feature_with_sentiment:
         variables.append(f'prev_{x}')
         daily_info[f'prev_{x}'] = daily_info[x].shift(1)
 
@@ -35,9 +35,10 @@ def random_forest_prediction(tweet_data, price_data, feature):
     # Define X (features) and y (target)
     X = daily_info[variables]
     y = daily_info['Open']  # The current day's open price
+    dates = daily_info['Start']  # Store the dates for plotting
 
     # Split the data into training and testing sets
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+    X_train, X_test, y_train, y_test, dates_train, dates_test = train_test_split(X, y, dates, test_size=0.2, random_state=42)
 
     # Initialize and train the Random Forest model
     model = RandomForestRegressor(n_estimators=100, random_state=42)
@@ -50,14 +51,23 @@ def random_forest_prediction(tweet_data, price_data, feature):
     mse = mean_squared_error(y_test, y_pred)
     print(f"Mean Squared Error: {mse}")
 
-    # Optionally, print or plot predictions vs actual values
-    results = pd.DataFrame({'Actual': y_test, 'Predicted': y_pred})
+    # Print and plot predictions vs actual values
+    results = pd.DataFrame({'Date': dates_test, 'Actual': y_test, 'Predicted': y_pred}).sort_values(by='Date')
     print(results)
 
-tweet_data = "../data/Sentiment_Analysis/sentiment_analysis.csv"
-price_data = '../data/Bitcoin_Price/bitcoin_2021-02-08_2021-02-13.csv'
+    plt.figure(figsize=(10, 6))
+    plt.plot(results['Date'], results['Actual'].values, label='Actual', color='blue', alpha=0.6)
+    plt.plot(results['Date'], results['Predicted'].values, label='Predicted', color='red', alpha=0.6)
+    plt.title('Actual vs Predicted Open Price')
+    plt.legend()
+    plt.xlabel('Date')
+    plt.ylabel('Open Price')
+    plt.xticks(rotation=45)
+    plt.tight_layout()
+    plt.savefig('random_forest_prediction.png', format='png', dpi=300)
+    plt.show()
+
+# Run the function
+data = '../data/Bitcoin_Price/price_sentiment_data.csv'
 selected_feature = ['Open', 'High', 'Low', 'Close', 'Volume', 'Market Cap']
-random_forest_prediction(tweet_data, price_data, selected_feature)
-
-
-
+random_forest_prediction(data, selected_feature)
