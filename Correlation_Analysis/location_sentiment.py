@@ -23,8 +23,9 @@ def location_sentiment_correlation(tweet_data):
 
     # Generate histogram
     plt.figure(figsize=(10, 6))
-    bar = sns.barplot(data=tweet_df, x="date", y="sentiment_score", errorbar=None, hue='Continent')
+    bar = sns.barplot(data=continent_sentiment, x="date", y="sentiment_score", errorbar=None, hue='Continent')
     bar.set(title = "Sentiment Scores by Date", xlabel = "Date", ylabel = "Sentiment Score")
+    plt.savefig('sentiment_location.png', format='png', dpi=300)
     plt.show()
 
 tweet_data = "../data/Location/location.csv"
