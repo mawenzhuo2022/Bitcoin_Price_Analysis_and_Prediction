@@ -31,11 +31,11 @@ def random_forest_prediction(data, feature):
         daily_info[f'prev_{x}'] = daily_info[x].shift(1)
 
     # Drop rows with NaN values (which will appear in the first row after shifting)
-    daily_info = daily_info.dropna()
+    daily_info = daily_info[daily_info['Close_Combined_Weekly'].notna()]
 
     # Define X (features) and y (target)
     X = daily_info[variables]
-    y = daily_info['Weekly_Data_Without_Noise']  # The current day's open price
+    y = daily_info['Close_Combined_Weekly']  # The current day's close price
     dates = daily_info['Start']  # Store the dates for plotting
 
     # Split the data into training and testing sets
@@ -73,6 +73,6 @@ def random_forest_prediction(data, feature):
     plt.show()
 
 # Run the function
-data = '../data/without_noise/without_noise.csv'
-selected_feature = ['Open', 'High', 'Low', 'Close', 'Volume', 'Market Cap']
+data = '../data/without_noise/all_features_final.csv'
+selected_feature = ['Open_Combined_Weekly', 'High_Combined_Weekly', 'Low_Combined_Weekly', 'Close_Combined_Weekly', 'Volume_Combined_Weekly', 'Market Cap_Combined_Weekly']
 random_forest_prediction(data, selected_feature)
