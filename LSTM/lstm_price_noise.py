@@ -1,13 +1,10 @@
 import pandas as pd
 import numpy as np
-
 from sklearn.preprocessing import MinMaxScaler
-from keras import models, layers, optimizers,callbacks
+from keras import models, layers, optimizers, callbacks
 import matplotlib.pyplot as plt
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 from sklearn.model_selection import TimeSeriesSplit, train_test_split
-
-from Bitcoin_model.bitcoin_lstm import model
 
 
 class FinancialPredictor:
