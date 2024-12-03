@@ -1,5 +1,6 @@
+# start time: 2024/12/2  22:19
 # @Author  : Sixing Wu
-# @Time    : 2024/11/9
+# @Time    : 2024/12/2
 # @Mac, Python 3.11
 # @Function: Using sentiment scores, with the previous day's data (optional) of open, close, high,
 # low, market cap, and volume to predict the next day's open price by random forest
@@ -23,7 +24,7 @@ def random_forest_prediction(data, feature):
     daily_info = data_df.copy()
 
     # Shift the features to get the previous day's data for each row
-    feature_with_sentiment = feature + ['sentiment_score']
+    feature_with_sentiment = feature
     variables = []
 
     for x in feature_with_sentiment:
@@ -35,7 +36,7 @@ def random_forest_prediction(data, feature):
 
     # Define X (features) and y (target)
     X = daily_info[variables]
-    y = daily_info['Open']  # The current day's open price
+    y = daily_info['Monthly_Data_Without_Noise']  # The current day's open price
     dates = daily_info['Start']  # Store the dates for plotting
 
     # Split the data into training and testing sets
@@ -63,16 +64,16 @@ def random_forest_prediction(data, feature):
     plt.figure(figsize=(10, 6))
     plt.plot(results['Date'], results['Actual'].values, label='Actual', color='blue', alpha=0.6)
     plt.plot(results['Date'], results['Predicted'].values, label='Predicted', color='red', alpha=0.6)
-    plt.title('Actual vs Predicted Open Price')
+    plt.title('Actual vs Predicted Close Price')
     plt.legend()
     plt.xlabel('Date')
-    plt.ylabel('Open Price')
+    plt.ylabel('Close Price')
     plt.xticks(rotation=45)
     plt.tight_layout()
-    plt.savefig('random_forest_prediction.png', format='png', dpi=300)
+    plt.savefig('random_forest_prediction_monthly_without_noise.png', format='png', dpi=300)
     plt.show()
 
 # Run the function
-data = '../data/Bitcoin_Price/price_sentiment_data.csv'
+data = '../data/without_noise/without_noise.csv'
 selected_feature = ['Open', 'High', 'Low', 'Close', 'Volume', 'Market Cap']
 random_forest_prediction(data, selected_feature)
