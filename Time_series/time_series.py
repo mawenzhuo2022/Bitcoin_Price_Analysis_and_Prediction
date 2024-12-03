@@ -1,7 +1,3 @@
-# -*- coding: utf-8 -*-
-# @Author  : Wenzhuo Ma
-# @Time    : 2024/11/21 1:53
-# @Function:
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -22,7 +18,6 @@ resampled_data = {
     'Weekly': data['Close'].resample('W').mean(),
     'Monthly': data['Close'].resample('ME').mean(),
     'Quarterly': data['Close'].resample('QE').mean(),
-
 }
 
 log_returns_resampled = {
@@ -30,11 +25,18 @@ log_returns_resampled = {
     'Weekly': data['Log_Returns'].resample('W').mean(),
     'Monthly': data['Log_Returns'].resample('ME').mean(),
     'Quarterly': data['Log_Returns'].resample('QE').mean(),
-
 }
 
 # 季节性分解配置
 periods = {'Daily': 1, 'Weekly': 7, 'Monthly': 30, 'Quarterly': 91}
+
+# 季节性分解并添加无噪声数据
+for key, period in periods.items():
+    result = seasonal_decompose(data['Close'].dropna(), model='additive', period=period)
+    data[f'{key}_Data_Without_Noise'] = result.trend + result.seasonal
+
+# 保存无噪声数据到新CSV文件
+data.reset_index().to_csv('../data/without_noise/without_noise.csv', index=False)
 
 # 创建子图
 fig, axes = plt.subplots(nrows=len(periods), ncols=1, figsize=(10, 20))
