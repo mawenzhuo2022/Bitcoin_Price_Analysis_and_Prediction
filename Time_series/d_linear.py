@@ -1,59 +1,94 @@
-# -*- coding: utf-8 -*-
-# @Author  : Wenzhuo Ma
-# @Time    : 2024/11/21 1:53
-# @Function:
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-from sklearn.linear_model import LinearRegression
-from scipy import signal
+from statsmodels.tsa.seasonal import seasonal_decompose
+import torch
+from torch.utils.data import DataLoader, TensorDataset
+import torch.optim as optim
+import torch.nn as nn
 
-# 读取数据
+class DLinear(nn.Module):
+    def __init__(self, input_size, hidden_size, output_size):
+        super(DLinear, self).__init__()
+        self.linear1 = nn.Linear(input_size, hidden_size)
+        self.relu = nn.ReLU()
+        self.linear2 = nn.Linear(hidden_size, output_size)
+
+    def forward(self, x):
+        x = self.linear1(x)
+        x = self.relu(x)
+        return self.linear2(x)
+
+# Read and prepare the data
 data = pd.read_csv('../data/Bitcoin_Price/bitcoin_2021-02-05_2022-12-27.csv')
-data['Date'] = pd.to_datetime(data['Start'])
-data.set_index('Date', inplace=True)
+data['Start'] = pd.to_datetime(data['Start'])
+data.set_index('Start', inplace=True)
+data['Log_Returns'] = np.log(data['Close'] / data['Close'].shift(1))
+data.dropna(inplace=True)
 
-# 准备线性回归模型
-X = np.array(range(len(data))).reshape(-1, 1)  # 天数作为自变量
-y = data['Close'].values  # 比特币收盘价作为因变量
+# Seasonal decomposition to extract trends and seasonality
+result = seasonal_decompose(data['Close'], model='additive', period=30)
+data['Trend'] = result.trend.fillna(method='bfill').fillna(method='ffill')
+data['Seasonal'] = result.seasonal.fillna(method='bfill').fillna(method='ffill')
+data.dropna(inplace=True)
 
-# 拟合线性模型
-model = LinearRegression()
-model.fit(X, y)
-trend = model.predict(X)
+# Prepare data for training
+features = data[['Trend', 'Seasonal']].values
+targets = data['Close'].values
 
-# 去除趋势
-detrended = y - trend
+# Convert to PyTorch tensors
+features = torch.tensor(features, dtype=torch.float32)
+targets = torch.tensor(targets, dtype=torch.float32).view(-1, 1)
 
-# 绘制原始数据和趋势线
-plt.figure(figsize=(12, 6))
-plt.subplot(211)
-plt.plot(data.index, y, label='Original')
-plt.plot(data.index, trend, label='Trend', color='red')
-plt.legend()
-plt.title('Original Data and Linear Trend')
+# Creating datasets and dataloaders
+dataset = TensorDataset(features, targets)
+train_size = int(len(dataset) * 0.8)
+test_size = len(dataset) - train_size
+train_dataset, test_dataset = torch.utils.data.random_split(dataset, [train_size, test_size])
+train_loader = DataLoader(train_dataset, batch_size=16, shuffle=True)
+test_loader = DataLoader(test_dataset, batch_size=16, shuffle=False)
 
-# 绘制去趋势后的数据
-plt.subplot(212)
-plt.plot(data.index, detrended, label='Detrended')
-plt.legend()
-plt.title('Detrended Data')
+# Initialize the DLinear model
+model = DLinear(input_size=2, hidden_size=64, output_size=1)
+criterion = nn.MSELoss()
+optimizer = optim.Adam(model.parameters(), lr=0.001)
 
-plt.tight_layout()
-plt.show()
+# Training loop
+epochs = 50
+for epoch in range(epochs):
+    model.train()
+    total_loss = 0
+    for inputs, labels in train_loader:
+        optimizer.zero_grad()
+        outputs = model(inputs)
+        loss = criterion(outputs, labels)
+        loss.backward()
+        optimizer.step()
+        total_loss += loss.item()
+    print(f'Epoch {epoch+1}/{epochs}, Loss: {total_loss/len(train_loader)}')
 
-# 检查去趋势数据的结构
-plt.figure(figsize=(12, 6))
-plt.acorr(detrended, maxlags=20, usevlines=True)
-plt.title('Autocorrelation of Detrended Data')
-plt.show()
+# Testing the model
+model.eval()
+predictions = []
+with torch.no_grad():
+    for inputs, labels in test_loader:
+        outputs = model(inputs)
+        predictions.extend(outputs.detach().numpy())
 
+# Resampling for different frequencies and plotting
+results = pd.DataFrame({
+    'Predicted': np.array(predictions).flatten(),
+    'Actual': data.iloc[train_size:]['Close'].values
+}, index=data.iloc[train_size:].index)
 
-# Create a copy of the original data
-extended_data = data.copy()
-
-# Add the detrended data as a new column
-extended_data['Detrended'] = detrended
-
-# Save the extended data to a new CSV file
-extended_data.to_csv('../data/detrended/detrended.csv')
+frequencies = {'D': 'Daily', 'W': 'Weekly', 'M': 'Monthly', 'Q': 'Quarterly'}
+for freq, title in frequencies.items():
+    resampled = results.resample(freq).mean()
+    plt.figure(figsize=(12, 6))
+    plt.plot(resampled.index, resampled['Predicted'], label='Predicted')
+    plt.plot(resampled.index, resampled['Actual'], label='Actual')
+    plt.title(f'Bitcoin Price Forecast - {title}')
+    plt.xlabel('Date')
+    plt.ylabel('Price')
+    plt.legend()
+    plt.show()
