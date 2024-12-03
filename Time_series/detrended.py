@@ -1,9 +1,5 @@
 # -*- coding: utf-8 -*-
 # @Author  : Wenzhuo Ma
-# @Time    : 2024/11/21 5:07
-# @Function:
-# -*- coding: utf-8 -*-
-# @Author  : Wenzhuo Ma
 # @Time    : 2024/11/21 1:53
 # @Function:
 import pandas as pd
@@ -13,7 +9,7 @@ from sklearn.linear_model import LinearRegression
 from scipy import signal
 
 # 读取数据
-data = pd.read_csv('../data/Bitcoin_Price/bitcoin_2018-01-01_2020-12-31.csv')
+data = pd.read_csv('../data/Bitcoin_Price/bitcoin_2021-02-05_2022-12-27.csv')
 data['Date'] = pd.to_datetime(data['Start'])
 data.set_index('Date', inplace=True)
 
@@ -51,3 +47,13 @@ plt.figure(figsize=(12, 6))
 plt.acorr(detrended, maxlags=20, usevlines=True)
 plt.title('Autocorrelation of Detrended Data')
 plt.show()
+
+
+# Create a copy of the original data
+extended_data = data.copy()
+
+# Add the detrended data as a new column
+extended_data['Detrended'] = detrended
+
+# Save the extended data to a new CSV file
+extended_data.to_csv('../data/detrended/detrended.csv')
