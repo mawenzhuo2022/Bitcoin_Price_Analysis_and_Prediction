@@ -1,5 +1,5 @@
 # @Author  : Sixing Wu
-# @Time    : 2024/11/9
+# @Time    : 2024/12/3
 # @Mac, Python 3.11
 # @Function: Using sentiment scores, with the previous day's data (optional) of open, close, high,
 # low, market cap, and volume to predict the next day's open price by random forest
@@ -23,7 +23,7 @@ def random_forest_prediction(data, feature):
     daily_info = data_df.copy()
 
     # Shift the features to get the previous day's data for each row
-    feature_with_sentiment = feature + ['sentiment_score']
+    feature_with_sentiment = feature
     variables = []
 
     for x in feature_with_sentiment:
@@ -69,7 +69,7 @@ def random_forest_prediction(data, feature):
     plt.ylabel('Open Price')
     plt.xticks(rotation=45)
     plt.tight_layout()
-    plt.savefig('random_forest_prediction.png', format='png', dpi=300)
+    plt.savefig('RF_without_sentiment.png', format='png', dpi=300)
     plt.show()
 
 # Run the function
