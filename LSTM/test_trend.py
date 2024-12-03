@@ -40,46 +40,54 @@ class TrendPredictor:
         self.classes_ = np.unique(trends)
         return trends
 
-    def prepare_data(self, data, lookback=1):  # Changed default lookback to 1
-        """Prepare sequences for trend prediction with additional features"""
+    def prepare_data(self, data, lookback=1):
+        """Prepare sequences for trend prediction using all available features including target lags"""
         df = data.copy()
 
-        # Calculate immediate price changes
+        # Calculate technical indicators for target column
         df['returns'] = df[self.price_column].pct_change()
-
-        # Add momentum indicators for shorter timeframes
         df['momentum_1'] = df['returns'].rolling(window=2).mean()
         df['momentum_2'] = df['returns'].rolling(window=3).mean()
-
-        # Calculate moving averages with shorter windows
-        df['MA3'] = df[self.price_column].rolling(window=3).mean()  # Changed from MA5
-        df['MA5'] = df[self.price_column].rolling(window=5).mean()  # Changed from MA10
-
-        # Calculate volatility with shorter window
-        df['volatility'] = df['returns'].rolling(window=3).std()  # Changed from 5
-
-        # Add rate of change
+        df['MA3'] = df[self.price_column].rolling(window=3).mean()
+        df['MA5'] = df[self.price_column].rolling(window=5).mean()
+        df['volatility'] = df['returns'].rolling(window=3).std()
         df['roc'] = df[self.price_column].pct_change(periods=lookback)
-
-        # Add price levels
         df['price_level'] = df[self.price_column] / df[self.price_column].rolling(window=3).mean()
+
+        # Create lagged versions of all available features
+        features = ['Open', 'High', 'Low', 'Close', 'Volume', 'Market Cap', 'sentiment_score']
+        for col in features:
+            for i in range(1, lookback + 1):
+                df[f'{col}_lag_{i}'] = df[col].shift(i)
 
         # Fill NaN values
         df = df.fillna(method='bfill')
 
+        # Combine base features and lagged features
+        base_features = ['returns', 'momentum_1', 'momentum_2', 'MA3', 'MA5',
+                         'volatility', 'roc', 'price_level']
+        lagged_features = [f'{col}_lag_{i}'
+                           for col in features
+                           for i in range(1, lookback + 1)]
+
+        all_features = base_features + lagged_features
+
         # Scale features
-        feature_columns = [self.price_column, 'returns', 'momentum_1', 'momentum_2',
-                           'MA3', 'MA5', 'volatility', 'roc', 'price_level']
-        scaled_features = self.scaler.fit_transform(df[feature_columns])
+        scaled_features = self.scaler.fit_transform(df[all_features])
 
         # Calculate trends
         trends = self.calculate_trends(df[self.price_column].values)
         encoded_trends = self.label_encoder.fit_transform(trends)
 
+        # Prepare sequences
         X, y = [], []
         for i in range(lookback, len(scaled_features)):
             X.append(scaled_features[i - lookback:i])
             y.append(encoded_trends[i])
+
+        print(f"\nFeatures used ({len(all_features)} total):")
+        print("Base features:", ', '.join(base_features))
+        print("Lagged features:", ', '.join(lagged_features))
 
         return np.array(X), np.array(y)
 
@@ -348,11 +356,24 @@ if __name__ == "__main__":
             file_path = input()
             data = pd.read_csv(file_path)
 
-    print("\nStarting trend prediction for Bitcoin prices...")
+    features = ['Open', 'High', 'Low', 'Close', 'Volume', 'Market Cap', 'sentiment_score']
+
+    # Select target column
+    print("\nWhat would you like to predict trends for? Available options:")
+    for i, feature in enumerate(features):
+        print(f"{i + 1}. {feature}")
+
+    choice = int(input("\nEnter the number of your choice (1-7): "))
+    target = features[choice - 1]
+
+    print(f"\nSelected target: {target}")
+    print("Will use all available features including lagged values of the target")
+
+    print("\nStarting trend prediction...")
     predictor, report, conf_matrix = train_and_evaluate_trend(
         data=data,
-        price_column='Close',
-        lookback=1,  # Changed from 10
-        epochs=30,  # Changed from 50
-        trend_threshold=0.01  # Changed from 0.015
+        price_column=target,
+        lookback=1,
+        epochs=30,
+        trend_threshold=0.01
     )
