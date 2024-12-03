@@ -56,4 +56,4 @@ extended_data = data.copy()
 extended_data['Detrended'] = detrended
 
 # Save the extended data to a new CSV file
-extended_data.to_csv('../data/d_lineared/d_lineared.csv')
+extended_data.to_csv('../data/detrended/detrended.csv')
