@@ -74,5 +74,5 @@ def random_forest_prediction(data, feature):
 
 # Run the function
 data = '../data/without_noise/all_features_final.csv'
-selected_feature = ['Open_Combined_Weekly', 'High_Combined_Weekly', 'Low_Combined_Weekly', 'Close_Combined_Weekly', 'Volume_Combined_Weekly', 'Market Cap_Combined_Weekly']
+selected_feature = ['Open_Combined_Quarterly', 'High_Combined_Quarterly', 'Low_Combined_Quarterly', 'Close_Combined_Quarterly', 'Volume_Combined_Quarterly', 'Market Cap_Combined_Quarterly']
 random_forest_prediction(data, selected_feature)

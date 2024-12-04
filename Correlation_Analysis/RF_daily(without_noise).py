@@ -1,4 +1,3 @@
-# start time: 2024/12/2  22:19
 # @Author  : Sixing Wu
 # @Time    : 2024/12/2
 # @Mac, Python 3.11
@@ -32,11 +31,11 @@ def random_forest_prediction(data, feature):
         daily_info[f'prev_{x}'] = daily_info[x].shift(1)
 
     # Drop rows with NaN values (which will appear in the first row after shifting)
-    daily_info = daily_info[daily_info['Close_Combined_Monthly'].notna()]
+    daily_info = daily_info[daily_info['Close_Combined_Daily'].notna()]
 
     # Define X (features) and y (target)
     X = daily_info[variables]
-    y = daily_info['Close_Combined_Monthly']  # The current day's close price
+    y = daily_info['Close_Combined_Daily']  # The current day's close price
     dates = daily_info['Start']  # Store the dates for plotting
 
     # Split the data into training and testing sets
@@ -70,10 +69,10 @@ def random_forest_prediction(data, feature):
     plt.ylabel('Close Price')
     plt.xticks(rotation=45)
     plt.tight_layout()
-    plt.savefig('random_forest_prediction_monthly_without_noise.png', format='png', dpi=300)
+    plt.savefig('RF_Daily_without_noise.png', format='png', dpi=300)
     plt.show()
 
 # Run the function
 data = '../data/without_noise/all_features_final.csv'
-selected_feature = ['Open_Combined_Monthly', 'High_Combined_Monthly', 'Low_Combined_Monthly', 'Close_Combined_Monthly', 'Volume_Combined_Monthly', 'Market Cap_Combined_Monthly']
+selected_feature = ['Open_Combined_Daily', 'High_Combined_Daily', 'Low_Combined_Daily', 'Close_Combined_Daily', 'Volume_Combined_Daily', 'Market Cap_Combined_Daily']
 random_forest_prediction(data, selected_feature)
