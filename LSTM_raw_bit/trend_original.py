@@ -347,7 +347,7 @@ if __name__ == "__main__":
             print("Please enter the correct path to your CSV file:")
             file_path = input()
             data = pd.read_csv(file_path)
-
+    data= data.drop(columns=['sentiment_score'])
     print("\nStarting trend prediction for Bitcoin prices...")
     predictor, report, conf_matrix = train_and_evaluate_trend(
         data=data,

@@ -55,7 +55,7 @@ class TrendPredictor:
         df['price_level'] = df[self.price_column] / df[self.price_column].rolling(window=3).mean()
 
         # Create lagged versions of all available features
-        features = ['Open', 'High', 'Low', 'Close', 'Volume', 'Market Cap', 'sentiment_score']
+        features = ['Open', 'High', 'Low', 'Close', 'Volume', 'Market Cap']
         for col in features:
             for i in range(1, lookback + 1):
                 df[f'{col}_lag_{i}'] = df[col].shift(i)
