@@ -277,7 +277,7 @@ def try_different_lookbacks(data, target_column, lookbacks=[3, 5, 7, 10], epochs
 
 if __name__ == "__main__":
     try:
-        data = pd.read_csv('data/Bitcoin_Price/price_sentiment_data.csv')
+        data = pd.read_csv('../data/Bitcoin_Price/price_sentiment_data.csv')
     except FileNotFoundError:
         try:
             data = pd.read_csv('../Bitcoin_Price_Analysis/data/Bitcoin_Price/price_sentiment_data.csv')
@@ -286,7 +286,7 @@ if __name__ == "__main__":
             file_path = input()
             data = pd.read_csv(file_path)
 
-    features = ['Open', 'High', 'Low', 'Close', 'Volume', 'Market Cap', 'sentiment_score']
+    features = ['Open', 'High', 'Low', 'Close', 'Volume', 'Market Cap']
 
     print("\nWhat would you like to predict? Available options:")
     for i, feature in enumerate(features):
